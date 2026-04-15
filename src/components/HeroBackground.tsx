@@ -19,7 +19,7 @@ export default function HeroBackground({ src, poster }: HeroBackgroundProps) {
       />
       <div
         data-testid="hero-overlay"
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-black/15"
       />
     </div>
   )
