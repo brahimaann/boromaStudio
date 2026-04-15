@@ -1,9 +1,9 @@
 // src/components/NavigationOverlay.tsx
 'use client'
 
-import Link from 'next/link'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
+import { useHyperspace } from './HyperspaceTransition'
 
 type NavLink = { label: string; href: string }
 
@@ -25,6 +25,7 @@ const socialIcons = [
 export default function NavigationOverlay({ links, defaultOpen = false }: NavigationOverlayProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
   const pathname = usePathname()
+  const { navigate } = useHyperspace()
 
   return (
     <>
@@ -53,18 +54,20 @@ export default function NavigationOverlay({ links, defaultOpen = false }: Naviga
             {links.map((link) => {
               const isActive = pathname === link.href
               return (
-                <Link
+                <button
                   key={link.href}
-                  href={link.href}
-                  onClick={() => setIsOpen(false)}
+                  onClick={(e) => {
+                    setIsOpen(false)
+                    navigate(link.href, e.currentTarget)
+                  }}
                   className={[
-                    'font-display text-white uppercase tracking-[4px] leading-none transition-opacity duration-150 hover:opacity-40',
+                    'font-display text-white uppercase tracking-[4px] leading-none transition-opacity duration-150 hover:opacity-40 bg-transparent border-none p-0 cursor-pointer',
                     'text-[clamp(2.5rem,7vw,6rem)]',
                     isActive ? 'opacity-40 line-through' : 'opacity-100',
                   ].join(' ')}
                 >
                   {link.label}
-                </Link>
+                </button>
               )
             })}
           </nav>
