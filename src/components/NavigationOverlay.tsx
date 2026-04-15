@@ -2,8 +2,7 @@
 'use client'
 
 import { useState } from 'react'
-import { usePathname } from 'next/navigation'
-import { useHyperspace } from './HyperspaceTransition'
+import { usePathname, useRouter } from 'next/navigation'
 
 type NavLink = { label: string; href: string }
 
@@ -25,7 +24,7 @@ const socialIcons = [
 export default function NavigationOverlay({ links, defaultOpen = false }: NavigationOverlayProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
   const pathname = usePathname()
-  const { navigate } = useHyperspace()
+  const router = useRouter()
 
   return (
     <>
@@ -56,9 +55,9 @@ export default function NavigationOverlay({ links, defaultOpen = false }: Naviga
               return (
                 <button
                   key={link.href}
-                  onClick={(e) => {
+                  onClick={() => {
                     setIsOpen(false)
-                    navigate(link.href, e.currentTarget)
+                    router.push(link.href)
                   }}
                   className={[
                     'font-display text-white uppercase tracking-[4px] leading-none transition-opacity duration-150 hover:opacity-40 bg-transparent border-none p-0 cursor-pointer',

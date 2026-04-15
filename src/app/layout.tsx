@@ -2,7 +2,6 @@
 import type { Metadata } from 'next'
 import { JetBrains_Mono, Bebas_Neue } from 'next/font/google'
 import PendulumLoader from '@/components/PendulumLoader'
-import HyperspaceTransition from '@/components/HyperspaceTransition'
 import './globals.css'
 
 const jetbrainsMono = JetBrains_Mono({
@@ -27,9 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={`${jetbrainsMono.variable} ${bebasNeue.variable} bg-black text-white`}>
         <PendulumLoader>
-          <HyperspaceTransition>
-            {children}
-          </HyperspaceTransition>
+          {children}
         </PendulumLoader>
       </body>
     </html>
