@@ -8,7 +8,7 @@
 
 ## 1. Overview
 
-A high-end minimalist landing page for Boroma Studios, a multidisciplinary creative/tech agency based in Minneapolis/Saint Paul. The aesthetic strictly follows the Supreme web interface: full-viewport media background, left-aligned monospace navigation overlaid in absolute position, no decorative elements. The landing page is a single cinematic surface — the video IS the page.
+A high-end minimalist landing page for Boroma Studios, a multidisciplinary creative/tech agency based in Minneapolis/Saint Paul. The aesthetic fuses two typographic registers: large bold Bebas Neue display type for navigation items (centered full-screen) and JetBrains Mono for all secondary/peripheral text (wordmark, socials, labels). The video VHS footage is the background on the landing page. The nav overlay is togglable — open by default on the landing page, closed by default on interior pages (revealed via a small trigger).
 
 ---
 
@@ -19,20 +19,20 @@ A high-end minimalist landing page for Boroma Studios, a multidisciplinary creat
 ```
 src/
   app/
-    layout.tsx          ← root layout: font, metadata, NavigationOverlay
-    page.tsx            ← landing page: HeroBackground only
-    software/page.tsx   ← shell
-    media/page.tsx      ← shell
-    capabilities/page.tsx ← shell
-    archive/page.tsx    ← shell
-    about/page.tsx      ← shell
-    contact/page.tsx    ← shell
-    portal/page.tsx     ← shell
+    layout.tsx              ← root layout: fonts, metadata, NavigationOverlay
+    page.tsx                ← landing page: HeroBackground + defaultOpen nav
+    software/page.tsx       ← shell
+    media/page.tsx          ← shell
+    capabilities/page.tsx   ← shell
+    archive/page.tsx        ← shell
+    about/page.tsx          ← shell
+    contact/page.tsx        ← shell
+    portal/page.tsx         ← shell
   components/
-    HeroBackground.tsx  ← video + dark overlay
-    NavigationOverlay.tsx ← nav links + social icons
+    HeroBackground.tsx      ← fixed video + dark overlay (landing page only)
+    NavigationOverlay.tsx   ← full-screen centered bold nav, togglable
 public/
-  afrobeat party vhs 6.22.24.mp4  ← hero video asset
+  hero.mp4                  ← hero video (renamed from original)
 ```
 
 ### Component Responsibilities
@@ -44,52 +44,69 @@ public/
 - Props: `src: string`, `poster?: string`
 - Used only on the landing page (`/`)
 
-**`NavigationOverlay`** — `'use client'` (requires `usePathname()`)
-- `position: fixed`, top-left, full viewport height, `z-index: 10`
-- Padding: `pt-8 pl-7 pb-8`
-- Internal layout: `flex flex-col justify-between h-full`
-- Top section: wordmark + nav links
-- Bottom section: social icons row (desktop only)
-- Props: `links: NavLink[]`
+**`NavigationOverlay`** — `'use client'`
+- Full-screen fixed overlay: `fixed inset-0 z-20 bg-black/80 flex flex-col items-center justify-center`
+- When closed: replaced by a small persistent trigger — `fixed top-7 left-7 z-20`, wordmark in JetBrains Mono clicking opens the overlay
+- Props: `links: NavLink[]`, `defaultOpen?: boolean` (true on landing, false on interior pages)
+- Internal state: `isOpen: boolean` initialized from `defaultOpen`
+- **Open state** renders:
+  - Centered column of nav links in Bebas Neue, large, uppercase
+  - "boroma studios" wordmark — `fixed top-7 left-7` in JetBrains Mono
+  - "close" button — `fixed top-7 right-7` in JetBrains Mono (sets `isOpen = false`)
+  - Social icons — `fixed bottom-7 left-7`, `hidden md:flex`, JetBrains Mono abbreviations
+- **Closed state** renders:
+  - Wordmark only — `fixed top-7 left-7` in JetBrains Mono, clicking sets `isOpen = true`
 
 **Root Layout (`app/layout.tsx`)**
-- Loads `JetBrains Mono` via `next/font/google`
-- Applies `font-mono bg-black text-white` to `<body>`
-- Mounts `NavigationOverlay` — persists across all page transitions
-- Interior pages receive left padding to clear the fixed nav column: `pl-48 md:pl-56`
+- Loads `JetBrains Mono` (weight 400) + `Bebas Neue` (weight 400) via `next/font/google`
+- Applies `bg-black text-white` to `<body>`
+- Does NOT mount `NavigationOverlay` — each page controls `defaultOpen`
+- `NavigationOverlay` is mounted individually per page so landing can pass `defaultOpen={true}`
 
 **Landing Page (`app/page.tsx`)**
-- Renders `<HeroBackground src="/hero.mp4" />` (see §9 for video rename)
-- `<main className="h-screen w-screen">`
-- No other content — HeroBackground is fixed-position and fills the viewport independently
+- `<HeroBackground src="/hero.mp4" />`
+- `<NavigationOverlay links={navLinks} defaultOpen={true} />`
+- `<main className="h-screen w-screen" />`
+
+**Interior Pages**
+- `<NavigationOverlay links={navLinks} defaultOpen={false} />` at top of each shell
+- Content in `<div className="min-h-screen pt-20 px-8 pb-16">`
 
 ---
 
 ## 3. Navigation
 
-### Nav Links (exact strings, lowercase)
+### Nav Links (exact display strings, uppercase in Bebas Neue)
 
-| Label | Path |
+| Display | Path |
 |---|---|
-| software | /software |
-| media | /media |
-| capabilities | /capabilities |
-| archive | /archive |
-| about | /about |
-| contact | /contact |
-| portal | /portal |
+| SOFTWARE | /software |
+| MEDIA | /media |
+| CAPABILITIES | /capabilities |
+| ARCHIVE | /archive |
+| ABOUT | /about |
+| CONTACT | /contact |
+| PORTAL | /portal |
 
-Defined as a `const navLinks` array in `layout.tsx`, typed as `NavLink[]`:
+Labels stored lowercase in the `navLinks` array — component renders them uppercase via CSS `uppercase` class. Active route detected via `usePathname()` exact match.
 
 ```ts
 type NavLink = { label: string; href: string }
-```
 
-Active route detected via `usePathname()` (requires `'use client'` on `NavigationOverlay`).
+const navLinks: NavLink[] = [
+  { label: 'software', href: '/software' },
+  { label: 'media', href: '/media' },
+  { label: 'capabilities', href: '/capabilities' },
+  { label: 'archive', href: '/archive' },
+  { label: 'about', href: '/about' },
+  { label: 'contact', href: '/contact' },
+  { label: 'portal', href: '/portal' },
+]
+```
 
 ### Social Icons
 
-Positioned at the bottom of the nav column. **Hidden on mobile** (`hidden md:flex`).
+Fixed bottom-left when nav is open. **Hidden on mobile** (`hidden md:flex`).
 
 | Platform | Display | Link |
 |---|---|---|
@@ -101,83 +118,87 @@ Positioned at the bottom of the nav column. **Hidden on mobile** (`hidden md:fle
 | WeChat | WC | placeholder `#` |
 | Weibo | WB | placeholder `#` |
 
-Rendered as monospace uppercase abbreviations. Real URLs wired up separately when brand accounts are confirmed.
+Rendered as JetBrains Mono uppercase abbreviations separated by ` · `.
 
 ---
 
 ## 4. Visual Design
 
-### Typography
+### Typography — Two Font Registers
 
-| Element | Size | Letter-spacing | Case | Color |
-|---|---|---|---|---|
-| Wordmark ("boroma studios") | 10px | 3px | uppercase | `rgba(255,255,255,0.45)` |
-| Nav links | 13px | 1.5px | lowercase | `#ffffff` |
-| Social abbreviations | 9px | 1px | uppercase | `rgba(255,255,255,0.4)` |
+| Element | Font | Size | Letter-spacing | Case | Color |
+|---|---|---|---|---|---|
+| Nav links | Bebas Neue | `clamp(3rem, 7vw, 7rem)` | 4px | uppercase | `#ffffff` |
+| Wordmark ("boroma studios") | JetBrains Mono | 10px | 3px | uppercase | `rgba(255,255,255,0.45)` |
+| Close button | JetBrains Mono | 10px | 3px | uppercase | `rgba(255,255,255,0.45)` |
+| Social abbreviations | JetBrains Mono | 9px | 2px | uppercase | `rgba(255,255,255,0.35)` |
+| Interior page headings | JetBrains Mono | 11px | widest | uppercase | `rgba(255,255,255,0.6)` |
 
-Font: `JetBrains Mono` (weight 400, latin subset) via `next/font/google`.
-Fallback: `ui-monospace, SFMono-Regular, monospace`.
+CSS custom properties defined via `next/font`:
+- `--font-jetbrains-mono` → Tailwind class `font-mono`
+- `--font-bebas-neue` → Tailwind class `font-display`
 
 ### Color Palette
 
-- Background: video dictates — VHS footage (`afrobeat party vhs 6.22.24.mp4`)
-- Overlay: `bg-black/50` (50% opacity)
+- Background: video VHS footage (`hero.mp4`) on landing; `bg-black` on interior pages
+- Video overlay: `bg-black/50`
+- Nav overlay background (open): `bg-black/80` (slight transparency lets video bleed through on landing)
 - Primary text: `#ffffff`
 - Subdued text: `rgba(255,255,255,0.45)`
-- No accent colors on this iteration (original red highlights were for Supreme-specific items that were replaced)
 
-### Hover & Active States
+### Hover & Active States (nav links)
 
-- **Default:** `color: #ffffff`
-- **Hover:** `color: rgba(255,255,255,0.45)`, transition `150ms ease`
-- **Active route:** `color: rgba(255,255,255,0.45)` + `line-through` text decoration
-- Active state determined by `usePathname()` exact match
+- **Default:** `opacity-100`
+- **Hover:** `opacity-40`, transition `duration-150 ease-out`
+- **Active route:** `opacity-40` + `line-through`
 
 ---
 
 ## 5. Tailwind Configuration
 
-One addition to `tailwind.config.ts`:
-
 ```ts
+// tailwind.config.ts
 theme: {
   extend: {
     fontFamily: {
       mono: ['var(--font-jetbrains-mono)', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+      display: ['var(--font-bebas-neue)', 'sans-serif'],
     },
   },
 }
 ```
 
-No custom colors, spacing, or breakpoints required. All layout utilities are standard Tailwind.
+No custom colors or spacing needed. All values are Tailwind defaults.
 
 ---
 
 ## 6. Interior Page Shells
 
-Each shell page (`/software`, `/media`, `/capabilities`, `/archive`, `/about`, `/contact`, `/portal`) renders:
+Each page mounts `NavigationOverlay` with `defaultOpen={false}` (wordmark trigger in corner). Content renders below at normal flow:
 
 ```tsx
 export default function PageName() {
   return (
-    <div className="min-h-screen pt-16 pl-48 md:pl-56 pr-8 pb-16">
-      <h1 className="text-xs tracking-widest uppercase text-white/60 mb-8">page-name</h1>
-      {/* content scaffold placeholder */}
-    </div>
+    <>
+      <NavigationOverlay links={navLinks} defaultOpen={false} />
+      <div className="min-h-screen pt-20 px-8 pb-16">
+        <h1 className="mb-8 text-[11px] uppercase tracking-widest text-white/60">page-name</h1>
+        {/* content scaffold */}
+      </div>
+    </>
   )
 }
 ```
 
-**`/about`** additionally renders: `<p>Minneapolis / Saint Paul</p>`
-**`/contact`** renders a form scaffold: scope field, budget tier select, submit button (UI only, no backend)
-**`/portal`** renders a login form scaffold (UI only, no auth)
+`/about` additionally renders: `<p className="text-[10px] uppercase tracking-widest text-white/40">Minneapolis / Saint Paul</p>`
+`/contact` renders: scope textarea + budget tier select + submit button (UI only)
+`/portal` renders: email input + password input + submit button (UI only)
 
 ---
 
 ## 7. Metadata
 
 ```ts
-// app/layout.tsx
 export const metadata: Metadata = {
   title: 'Boroma Studios',
   description: 'Multidisciplinary creative and engineering studio. Minneapolis / Saint Paul.',
@@ -189,14 +210,14 @@ export const metadata: Metadata = {
 ## 8. Out of Scope (This Pass)
 
 - Contact form backend / email routing
-- Portal authentication (no auth provider wired)
-- Interior page real content (all shells)
+- Portal authentication
 - Social icon real URLs (placeholders only)
 - SEO / OG image
-- Animations beyond CSS hover transitions
+- Interior page real content (all shells)
+- Nav open/close animation (plain toggle, no transition)
 
 ---
 
 ## 9. File Naming Note
 
-The video file `afrobeat party vhs 6.22.24.mp4` contains spaces and special characters. It must be placed in `public/` and referenced in code with URL encoding: `/afrobeat%20party%20vhs%206.22.24.mp4`, or renamed to `hero.mp4` for simplicity. **Recommendation: rename to `hero.mp4`** at project setup to avoid encoding issues across environments.
+Rename `afrobeat party vhs 6.22.24.mp4` → `hero.mp4` in `public/` at project setup. Avoids URL-encoding issues across all environments.
