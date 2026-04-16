@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <main className="h-screen w-screen">
       <HeroBackground src="/hero.mp4" />
-      <NavigationOverlay links={navLinks} defaultOpen={true} />
+      <NavigationOverlay links={navLinks} defaultOpen={false} />
     </main>
   )
 }

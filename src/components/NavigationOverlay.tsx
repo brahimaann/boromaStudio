@@ -1,7 +1,7 @@
 // src/components/NavigationOverlay.tsx
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 
 type NavLink = { label: string; href: string }
@@ -28,6 +28,32 @@ export default function NavigationOverlay({ links, defaultOpen = false }: Naviga
   const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const isLight = pathname.startsWith('/software')
+  const isHero = pathname === '/'
+
+  // ── Hero triggers: click / space / enter / b open the nav ────────────────
+  useEffect(() => {
+    if (!isHero || isOpen) return
+
+    const handleKey = (e: KeyboardEvent) => {
+      if ([' ', 'Enter', 'b', 'B'].includes(e.key)) {
+        e.preventDefault()
+        setIsOpen(true)
+      }
+    }
+
+    const handleClick = (e: MouseEvent) => {
+      // Skip the wordmark button — it has its own single/double-click logic
+      if ((e.target as Element).closest('[data-wordmark]')) return
+      setIsOpen(true)
+    }
+
+    window.addEventListener('keydown', handleKey)
+    window.addEventListener('click', handleClick)
+    return () => {
+      window.removeEventListener('keydown', handleKey)
+      window.removeEventListener('click', handleClick)
+    }
+  }, [isHero, isOpen])
 
   // Single click → open nav after 280ms (waits to see if double-click follows)
   // Double click → navigate home immediately, nav stays closed
@@ -48,6 +74,7 @@ export default function NavigationOverlay({ links, defaultOpen = false }: Naviga
     <>
       {/* Wordmark — single click opens nav, double click goes home */}
       <button
+        data-wordmark
         onClick={handleWordmarkClick}
         className={[
           'fixed top-7 left-7 z-30 font-mono text-[10px] uppercase tracking-[3px] cursor-pointer bg-transparent border-none p-0 transition-colors duration-500',
