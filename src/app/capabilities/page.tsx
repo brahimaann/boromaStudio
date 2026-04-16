@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import NavigationOverlay from '@/components/NavigationOverlay'
 import { navLinks } from '@/lib/nav'
+import IntakeDrawer from './IntakeDrawer'
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -88,6 +89,7 @@ const capabilities: Capability[] = [
 
 export default function CapabilitiesPage() {
   const [active, setActive] = useState<string | null>(null)
+  const [selectedService, setSelectedService] = useState<string | null>(null)
 
   const toggle = (id: string) => setActive(prev => prev === id ? null : id)
 
@@ -101,6 +103,14 @@ export default function CapabilitiesPage() {
         <p className="font-mono text-[9px] uppercase tracking-[4px] text-white/25 mb-20">
           capabilities // service index
         </p>
+
+        {/* Intake drawer */}
+        {selectedService !== null && (
+          <IntakeDrawer
+            selectedService={selectedService}
+            onClose={() => setSelectedService(null)}
+          />
+        )}
 
         {/* Capability rows */}
         <div className="divide-y divide-white/8">
@@ -221,6 +231,16 @@ export default function CapabilitiesPage() {
                             </li>
                           ))}
                         </ul>
+                      </div>
+
+                      {/* Inquire CTA */}
+                      <div className="md:col-span-12 pt-2 flex justify-end">
+                        <button
+                          onClick={() => setSelectedService(`${cap.id} // ${cap.title}`)}
+                          className="font-mono text-[9px] uppercase tracking-[3px] text-white/40 border border-white/15 px-4 py-2 hover:text-white hover:border-white/60 transition-colors duration-150"
+                        >
+                          Start a Project →
+                        </button>
                       </div>
 
                     </div>
