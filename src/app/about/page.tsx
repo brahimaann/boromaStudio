@@ -200,16 +200,29 @@ export default function AboutPage() {
       h = canvas.height;
 
       const isMobile = w < 768;
-      const xOffset = isMobile ? 0 : 200;
 
-      CONFIG.awidth = Math.min(600, w - xOffset);
-      CONFIG.aheight = Math.min(600, h - 100);
-      CONFIG.gridW = Math.min(40, Math.floor(CONFIG.awidth / 12));
-      CONFIG.gridH = Math.min(40, Math.floor(CONFIG.awidth / 8));
+      // On mobile: cloth fills ~90% of the narrower dimension, stays square-ish
+      // On desktop: shift right to clear the fixed wordmark
+      const padding = isMobile ? 32 : 120;
+      const navShift = isMobile ? 0 : 80;
+      CONFIG.awidth = Math.min(isMobile ? w - padding : 520, w - padding);
+      CONFIG.aheight = Math.min(isMobile ? h * 0.75 : 520, h - 120);
+
+      // Fewer columns on mobile so characters stay legible
+      CONFIG.gridW = isMobile
+        ? Math.min(22, Math.floor(CONFIG.awidth / 14))
+        : Math.min(36, Math.floor(CONFIG.awidth / 13));
+      CONFIG.gridH = isMobile
+        ? Math.min(28, Math.floor(CONFIG.aheight / 18))
+        : Math.min(36, Math.floor(CONFIG.aheight / 13));
+
       CONFIG.cellWidth = CONFIG.awidth / (CONFIG.gridW - 1);
       CONFIG.cellHeight = CONFIG.aheight / (CONFIG.gridH - 1);
 
-      const fontSize = Math.max(10, CONFIG.cellHeight * 1.2);
+      // Store navShift so drawCode can use it without recapturing w
+      (CONFIG as typeof CONFIG & { navShift: number }).navShift = navShift;
+
+      const fontSize = Math.max(9, CONFIG.cellHeight * 1.1);
 
       // Pre-render each unique character to an offscreen canvas
       for (const ch of new Set(charArray)) {
@@ -263,7 +276,8 @@ export default function AboutPage() {
     // --- Render ---
     let lastDelta = 0;
     const drawCode = () => {
-      const offsetX = w / 2 - CONFIG.awidth / 2 + (w > 768 ? 100 : 0);
+      const navShift = (CONFIG as typeof CONFIG & { navShift: number }).navShift ?? 0;
+      const offsetX = w / 2 - CONFIG.awidth / 2 + navShift;
       const offsetY = h / 2 - CONFIG.aheight / 2;
 
       particles.forEach((p) => {
@@ -307,10 +321,13 @@ export default function AboutPage() {
     const mousePos = new Vec2();
     let grabbedParticle: Particle | null = null;
 
-    const getOffsets = () => ({
-      ox: w / 2 - CONFIG.awidth / 2 + (w > 768 ? 100 : 0),
-      oy: h / 2 - CONFIG.aheight / 2,
-    });
+    const getOffsets = () => {
+      const navShift = (CONFIG as typeof CONFIG & { navShift: number }).navShift ?? 0;
+      return {
+        ox: w / 2 - CONFIG.awidth / 2 + navShift,
+        oy: h / 2 - CONFIG.aheight / 2,
+      };
+    };
 
     const handleMove = (e: PointerEvent) => {
       const rect = canvas.getBoundingClientRect();

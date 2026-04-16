@@ -14,3 +14,12 @@ body {
   margin: 0;
   padding: 0;
 }
+
+@keyframes pageFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.page-fade-in {
+  animation: pageFadeIn 0.9s ease forwards;
+}
