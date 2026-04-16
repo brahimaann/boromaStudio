@@ -68,18 +68,19 @@ export default function GalleryClient({ sessions }: { sessions: Session[] }) {
     <div className="min-h-screen bg-black text-white">
 
       {/* ── Sticky header ─────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-20 bg-black/90 backdrop-blur-sm border-b border-white/8 px-4 pt-7 pb-4 pl-28 md:pl-40 flex items-end justify-between gap-4 flex-wrap">
-        <div>
-          <p className="font-mono text-[9px] uppercase tracking-[3px] text-white/30 mb-1">
+      <header className="sticky top-0 z-20 bg-black/90 backdrop-blur-sm border-b border-white/8">
+        {/* Row 1: title — left-padded to clear fixed wordmark */}
+        <div className="pl-36 md:pl-44 pr-4 pt-7 pb-2 flex items-end gap-3">
+          <p className="font-mono text-[9px] uppercase tracking-[3px] text-white/30">
             photography
           </p>
-          <p className="font-mono text-[9px] text-white/20 tracking-wider">
+          <p className="font-mono text-[9px] text-white/15 tracking-wider">
             {totalCount} frames
           </p>
         </div>
 
-        {/* Session filter */}
-        <nav className="flex items-center gap-1 flex-wrap justify-end">
+        {/* Row 2: session filters — scrollable on mobile, no wrapping */}
+        <nav className="pl-4 md:pl-44 pr-4 pb-3 flex items-center gap-1 overflow-x-auto scrollbar-none">
           <button
             onClick={() => setActive('all')}
             className={filterCls(active === 'all')}

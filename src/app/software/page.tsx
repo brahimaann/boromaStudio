@@ -1,6 +1,7 @@
 // src/app/software/page.tsx
 import NavigationOverlay from '@/components/NavigationOverlay'
 import { navLinks } from '@/lib/nav'
+import Image from 'next/image'
 
 const projects = [
   {
@@ -12,6 +13,7 @@ const projects = [
     description:
       'Digital ecosystem and community agency infrastructure. Contact and identity layer for the MRND platform.',
     github: 'https://github.com/brahimaann/mrndcontact',
+    screenshot: '/MRNDSS.png',
   },
   {
     numeral: 'II.',
@@ -22,6 +24,7 @@ const projects = [
     description:
       'Standalone application for downloading and converting streaming audio into WAV or MP3 formats for professional engineering workflows.',
     github: 'https://github.com/brahimaann/YT2WAV',
+    screenshot: '/wavwarrioess.png',
   },
   {
     numeral: 'III.',
@@ -32,6 +35,7 @@ const projects = [
     description:
       'High-performance landing architecture and interface development for a professional creative portfolio.',
     github: 'https://github.com/brahimaann/JORDON-KING-LANDING',
+    screenshot: '/JKSS.png',
   },
   {
     numeral: 'IV.',
@@ -42,6 +46,7 @@ const projects = [
     description:
       'Standalone VST2/VST3 plugin scanner with Supreme-inspired UI. Indexes and catalogues audio plugins across the system.',
     github: 'https://github.com/brahimaann/vst-scanner',
+    screenshot: null,
   },
 ]
 
@@ -105,17 +110,30 @@ export default function SoftwarePage() {
                     </div>
                   </div>
 
-                  {/* Right — media placeholder + caption */}
+                  {/* Right — screenshot or placeholder + caption */}
                   <div className="lg:col-span-9">
                     <a
                       href={project.github}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block aspect-[16/9] w-full bg-black/[0.04] border border-black/[0.06] mb-5 flex items-center justify-center hover:bg-black/[0.07] transition-colors duration-200 group"
+                      className="block w-full mb-5 border border-black/[0.06] overflow-hidden hover:opacity-90 transition-opacity duration-200 group"
                     >
-                      <span className="font-mono text-[9px] uppercase tracking-widest text-black/15 group-hover:text-black/25 transition-colors duration-200">
-                        view on github →
-                      </span>
+                      {project.screenshot ? (
+                        <Image
+                          src={project.screenshot}
+                          alt={`${project.title} screenshot`}
+                          width={1920}
+                          height={1080}
+                          className="w-full h-auto block"
+                          sizes="(max-width: 1024px) 100vw, 75vw"
+                        />
+                      ) : (
+                        <div className="aspect-[16/9] w-full bg-black/[0.04] flex items-center justify-center group">
+                          <span className="font-mono text-[9px] uppercase tracking-widest text-black/15 group-hover:text-black/25 transition-colors duration-200">
+                            view on github →
+                          </span>
+                        </div>
+                      )}
                     </a>
                     <div className="grid grid-cols-1 md:grid-cols-12">
                       <p className="md:col-span-8 font-mono text-[10px] leading-loose text-black/55">

@@ -1,7 +1,7 @@
 // src/components/NavigationOverlay.tsx
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 
 type NavLink = { label: string; href: string }
@@ -25,14 +25,30 @@ export default function NavigationOverlay({ links, defaultOpen = false }: Naviga
   const [isOpen, setIsOpen] = useState(defaultOpen)
   const pathname = usePathname()
   const router = useRouter()
+  const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const isLight = pathname.startsWith('/software')
 
+  // Single click → open nav after 280ms (waits to see if double-click follows)
+  // Double click → navigate home immediately, nav stays closed
+  const handleWordmarkClick = () => {
+    if (clickTimer.current) {
+      clearTimeout(clickTimer.current)
+      clickTimer.current = null
+      router.push('/')
+    } else {
+      clickTimer.current = setTimeout(() => {
+        clickTimer.current = null
+        setIsOpen(true)
+      }, 280)
+    }
+  }
+
   return (
     <>
-      {/* Wordmark — always visible, acts as trigger when closed */}
+      {/* Wordmark — single click opens nav, double click goes home */}
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={handleWordmarkClick}
         className={[
           'fixed top-7 left-7 z-30 font-mono text-[10px] uppercase tracking-[3px] cursor-pointer bg-transparent border-none p-0 transition-colors duration-500',
           isLight ? 'text-black/50' : 'text-white/45',
@@ -41,17 +57,18 @@ export default function NavigationOverlay({ links, defaultOpen = false }: Naviga
         boroma studios
       </button>
 
-      {/* Full-screen overlay — only when open */}
+      {/* Full-screen overlay */}
       {isOpen && (
         <div
           className={[
             'fixed inset-0 z-20 flex flex-col items-center justify-center transition-colors duration-500',
             isLight ? 'bg-white/92' : 'bg-black/80',
           ].join(' ')}
+          onClick={() => setIsOpen(false)}
         >
           {/* Close button */}
           <button
-            onClick={() => setIsOpen(false)}
+            onClick={(e) => { e.stopPropagation(); setIsOpen(false) }}
             className={[
               'fixed top-7 right-7 font-mono text-[10px] uppercase tracking-[3px] cursor-pointer bg-transparent border-none p-0 transition-colors duration-150',
               isLight
@@ -62,8 +79,11 @@ export default function NavigationOverlay({ links, defaultOpen = false }: Naviga
             close
           </button>
 
-          {/* Nav links */}
-          <nav className="flex flex-col items-center gap-1">
+          {/* Nav links — stopPropagation so backdrop click doesn't fire */}
+          <nav
+            className="flex flex-col items-center gap-1"
+            onClick={(e) => e.stopPropagation()}
+          >
             {links.map((link) => {
               const isActive = pathname === link.href
               return (
@@ -90,6 +110,7 @@ export default function NavigationOverlay({ links, defaultOpen = false }: Naviga
           <div
             data-testid="social-icons"
             className="hidden md:flex fixed bottom-7 left-7 gap-3"
+            onClick={(e) => e.stopPropagation()}
           >
             {socialIcons.map((icon) => (
               <a
