@@ -9,19 +9,13 @@ type Props = {
   onClose: () => void
 }
 
-const BUDGET_TIERS = [
-  '$3k — $6k',
-  '$6k — $12k',
-  '$12k — $20k',
-  '$20k+',
-]
-
 export default function IntakeDrawer({ selectedService, onClose }: Props) {
-  const [step, setStep]     = useState(1)
-  const [name, setName]     = useState('')
-  const [email, setEmail]   = useState('')
-  const [budget, setBudget] = useState<string | null>(null)
-  const [scope, setScope]   = useState('')
+  const [step, setStep]           = useState(1)
+  const [name, setName]           = useState('')
+  const [email, setEmail]         = useState('')
+  const [budgetFrom, setBudgetFrom] = useState('')
+  const [budgetTo, setBudgetTo]   = useState('')
+  const [scope, setScope]         = useState('')
 
   // Lock body scroll while drawer is open
   useEffect(() => {
@@ -37,11 +31,15 @@ export default function IntakeDrawer({ selectedService, onClose }: Props) {
   }, [onClose])
 
   const handleSubmit = () => {
+    const budgetRange = budgetTo.trim()
+      ? `${budgetFrom.trim()} — ${budgetTo.trim()}`
+      : budgetFrom.trim()
+
     const payload = {
       service:   selectedService,
       name:      name.trim(),
       email:     email.trim(),
-      budget,
+      budget:    budgetRange,
       scope:     scope.trim(),
       timestamp: new Date().toISOString(),
     }
@@ -50,7 +48,7 @@ export default function IntakeDrawer({ selectedService, onClose }: Props) {
   }
 
   const canContinue = name.trim().length > 0 && email.trim().length > 0
-  const canSubmit   = budget !== null && scope.trim().length > 0
+  const canSubmit   = budgetFrom.trim().length > 0 && scope.trim().length > 0
 
   return (
     <>
@@ -150,26 +148,40 @@ export default function IntakeDrawer({ selectedService, onClose }: Props) {
           {step === 2 && (
             <div className="flex flex-col gap-8">
 
-              {/* Budget tiers */}
+              {/* Budget range — free form */}
               <div className="flex flex-col gap-3">
                 <span className="font-mono text-[8px] uppercase tracking-[3px] text-black/35">
                   Budget Range
                 </span>
-                <div className="grid grid-cols-2 gap-2">
-                  {BUDGET_TIERS.map(tier => (
-                    <button
-                      key={tier}
-                      onClick={() => setBudget(tier)}
-                      className={[
-                        'font-mono text-[10px] tracking-wide py-4 px-3 border text-left transition-all duration-150',
-                        budget === tier
-                          ? 'border-black bg-black text-white'
-                          : 'border-black/15 text-black/50 hover:border-black/40 hover:text-black/80',
-                      ].join(' ')}
-                    >
-                      {tier}
-                    </button>
-                  ))}
+                <div className="grid grid-cols-2 gap-4">
+                  <label className="flex flex-col gap-2">
+                    <span className="font-mono text-[8px] text-black/25 tracking-widest">From</span>
+                    <div className="flex items-baseline gap-1 border-b border-black/20 focus-within:border-black/60 transition-colors duration-150 pb-2">
+                      <span className="font-mono text-[10px] text-black/30">$</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={budgetFrom}
+                        onChange={e => setBudgetFrom(e.target.value)}
+                        placeholder="5,000"
+                        className="font-mono text-[11px] text-black bg-transparent outline-none w-full placeholder:text-black/20"
+                      />
+                    </div>
+                  </label>
+                  <label className="flex flex-col gap-2">
+                    <span className="font-mono text-[8px] text-black/25 tracking-widest">To <span className="text-black/15">(optional)</span></span>
+                    <div className="flex items-baseline gap-1 border-b border-black/20 focus-within:border-black/60 transition-colors duration-150 pb-2">
+                      <span className="font-mono text-[10px] text-black/30">$</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={budgetTo}
+                        onChange={e => setBudgetTo(e.target.value)}
+                        placeholder="10,000"
+                        className="font-mono text-[11px] text-black bg-transparent outline-none w-full placeholder:text-black/20"
+                      />
+                    </div>
+                  </label>
                 </div>
               </div>
 
