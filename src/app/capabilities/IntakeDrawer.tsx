@@ -10,12 +10,15 @@ type Props = {
 }
 
 export default function IntakeDrawer({ selectedService, onClose }: Props) {
-  const [step, setStep]           = useState(1)
-  const [name, setName]           = useState('')
-  const [email, setEmail]         = useState('')
-  const [budgetFrom, setBudgetFrom] = useState('')
-  const [budgetTo, setBudgetTo]   = useState('')
-  const [scope, setScope]         = useState('')
+  const [step, setStep]               = useState(1)
+  const [name, setName]               = useState('')
+  const [email, setEmail]             = useState('')
+  const [budgetFrom, setBudgetFrom]   = useState('')
+  const [budgetTo, setBudgetTo]       = useState('')
+  const [scope, setScope]             = useState('')
+  const [submitting, setSubmitting]   = useState(false)
+  const [submitted, setSubmitted]     = useState(false)
+  const [submitError, setSubmitError] = useState('')
 
   // Lock body scroll while drawer is open
   useEffect(() => {
@@ -30,7 +33,10 @@ export default function IntakeDrawer({ selectedService, onClose }: Props) {
     return () => window.removeEventListener('keydown', handler)
   }, [onClose])
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    setSubmitting(true)
+    setSubmitError('')
+
     const budgetRange = budgetTo.trim()
       ? `${budgetFrom.trim()} — ${budgetTo.trim()}`
       : budgetFrom.trim()
@@ -43,8 +49,22 @@ export default function IntakeDrawer({ selectedService, onClose }: Props) {
       scope:     scope.trim(),
       timestamp: new Date().toISOString(),
     }
-    console.log('[Boroma Studios — Intake]', payload)
-    onClose()
+
+    try {
+      const res = await fetch('/api/inquire', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const data = await res.json()
+      if (!data.ok) throw new Error(data.error || 'Unknown error')
+      setSubmitted(true)
+      setTimeout(onClose, 2000)
+    } catch {
+      setSubmitError('Something went wrong — please try again.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const canContinue = name.trim().length > 0 && email.trim().length > 0
@@ -234,18 +254,31 @@ export default function IntakeDrawer({ selectedService, onClose }: Props) {
               >
                 ← Back
               </button>
-              <button
-                onClick={handleSubmit}
-                disabled={!canSubmit}
-                className={[
-                  'font-mono text-[9px] uppercase tracking-[3px] transition-all duration-150 px-4 py-2 border',
-                  canSubmit
-                    ? 'border-black bg-black text-white hover:bg-transparent hover:text-black'
-                    : 'border-black/10 text-black/20 cursor-not-allowed',
-                ].join(' ')}
-              >
-                Submit
-              </button>
+              <div className="flex flex-col items-end gap-1">
+                {submitError && (
+                  <p className="font-mono text-[8px] text-red-500 tracking-wide">
+                    {submitError}
+                  </p>
+                )}
+                {submitted ? (
+                  <p className="font-mono text-[9px] uppercase tracking-[3px] text-black/50">
+                    We'll be in touch ✓
+                  </p>
+                ) : (
+                  <button
+                    onClick={handleSubmit}
+                    disabled={!canSubmit || submitting}
+                    className={[
+                      'font-mono text-[9px] uppercase tracking-[3px] transition-all duration-150 px-4 py-2 border',
+                      canSubmit && !submitting
+                        ? 'border-black bg-black text-white hover:bg-transparent hover:text-black'
+                        : 'border-black/10 text-black/20 cursor-not-allowed',
+                    ].join(' ')}
+                  >
+                    {submitting ? 'Sending...' : 'Submit'}
+                  </button>
+                )}
+              </div>
             </>
           )}
         </div>
