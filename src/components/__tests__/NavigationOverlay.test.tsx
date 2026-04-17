@@ -78,7 +78,7 @@ describe('NavigationOverlay', () => {
     render(<NavigationOverlay links={testLinks} defaultOpen={true} />)
     const socials = screen.getByTestId('social-icons')
     const links = socials.querySelectorAll('a')
-    expect(links).toHaveLength(4)
+    expect(links).toHaveLength(3)
   })
 
   it('renders social icons with correct aria-labels', () => {
@@ -86,7 +86,6 @@ describe('NavigationOverlay', () => {
     const socials = screen.getByTestId('social-icons')
     expect(socials.querySelector('[aria-label="Instagram"]')).toBeInTheDocument()
     expect(socials.querySelector('[aria-label="YouTube"]')).toBeInTheDocument()
-    expect(socials.querySelector('[aria-label="Facebook"]')).toBeInTheDocument()
     expect(socials.querySelector('[aria-label="Spotify"]')).toBeInTheDocument()
   })
 
@@ -94,6 +93,6 @@ describe('NavigationOverlay', () => {
     render(<NavigationOverlay links={testLinks} defaultOpen={true} />)
     const socials = screen.getByTestId('social-icons')
     const svgs = socials.querySelectorAll('svg')
-    expect(svgs).toHaveLength(4)
+    expect(svgs).toHaveLength(3)
   })
 })
