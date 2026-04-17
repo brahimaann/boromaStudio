@@ -47,3 +47,7 @@ node_modules
 *.mp4
 *.mov
 "afrobeat party vhs 6.22.24.mp4"
+
+# gallery images — served from Cloudinary, not committed
+public/works/*
+!public/works/.gitkeep

@@ -1,8 +1,13 @@
 // src/lib/gallery.ts
-// Server-only: reads public/works at build/request time and groups into sessions.
+// Server-only: fetches public/works images from Cloudinary and groups into sessions.
 
-import fs from 'fs'
-import path from 'path'
+import { v2 as cloudinary } from 'cloudinary'
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+})
 
 export type Photo = { file: string; src: string }
 export type Session = { id: string; label: string; date: string; photos: Photo[] }
@@ -27,18 +32,29 @@ const RULES: Rule[] = [
   { id: 'canon',    label: 'Canon',         date: '—',        match: f => f.startsWith('_MG_') },
 ]
 
-export function getSessions(): Session[] {
-  const dir = path.join(process.cwd(), 'public', 'works')
-  const files = fs
-    .readdirSync(dir)
-    .filter(f => /\.(jpe?g|png|webp)$/i.test(f))
-    .sort()
+export async function getSessions(): Promise<Session[]> {
+  let resources: { public_id: string; secure_url: string }[] = []
+
+  try {
+    const result = await cloudinary.api.resources({
+      type:        'upload',
+      prefix:      'works/',
+      max_results: 500,
+      resource_type: 'image',
+    })
+    resources = result.resources
+  } catch {
+    // Credentials not set or folder empty — return empty gallery
+    return []
+  }
 
   const buckets = new Map<string, Photo[]>(RULES.map(r => [r.id, []]))
   const unmatched: Photo[] = []
 
-  for (const file of files) {
-    const src = `/works/${encodeURIComponent(file)}`
+  for (const resource of resources) {
+    // public_id is like "works/filename" — extract just the filename part
+    const file = resource.public_id.replace(/^works\//, '')
+    const src  = resource.secure_url
     const photo: Photo = { file, src }
     const rule = RULES.find(r => r.match(file))
     if (rule) {

@@ -4,8 +4,8 @@ import { navLinks } from '@/lib/nav'
 import { getSessions } from '@/lib/gallery'
 import GalleryClient from './GalleryClient'
 
-export default function WorkPage() {
-  const sessions = getSessions()
+export default async function WorkPage() {
+  const sessions = await getSessions()
   return (
     <>
       <NavigationOverlay links={navLinks} defaultOpen={false} />
