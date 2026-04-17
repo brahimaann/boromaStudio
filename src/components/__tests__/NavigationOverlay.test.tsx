@@ -73,4 +73,27 @@ describe('NavigationOverlay', () => {
     expect(socials).toHaveClass('hidden')
     expect(socials).toHaveClass('md:flex')
   })
+
+  it('renders exactly four social icon links', () => {
+    render(<NavigationOverlay links={testLinks} defaultOpen={true} />)
+    const socials = screen.getByTestId('social-icons')
+    const links = socials.querySelectorAll('a')
+    expect(links).toHaveLength(4)
+  })
+
+  it('renders social icons with correct aria-labels', () => {
+    render(<NavigationOverlay links={testLinks} defaultOpen={true} />)
+    const socials = screen.getByTestId('social-icons')
+    expect(socials.querySelector('[aria-label="Instagram"]')).toBeInTheDocument()
+    expect(socials.querySelector('[aria-label="YouTube"]')).toBeInTheDocument()
+    expect(socials.querySelector('[aria-label="Facebook"]')).toBeInTheDocument()
+    expect(socials.querySelector('[aria-label="Spotify"]')).toBeInTheDocument()
+  })
+
+  it('renders SVGs inside each social icon link', () => {
+    render(<NavigationOverlay links={testLinks} defaultOpen={true} />)
+    const socials = screen.getByTestId('social-icons')
+    const svgs = socials.querySelectorAll('svg')
+    expect(svgs).toHaveLength(4)
+  })
 })
