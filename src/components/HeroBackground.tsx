@@ -19,35 +19,23 @@ export default function HeroBackground({ src, poster }: HeroBackgroundProps) {
     video.muted = true
     video.playsInline = true
 
-    const attemptPlay = () => {
-      video.play().then(() => {
-        setBlocked(false)
-      }).catch(() => {
-        // Autoplay blocked (in-app browser, low-power mode, etc.)
-        setBlocked(true)
-      })
-    }
-
-    if (video.readyState >= 3) {
-      attemptPlay()
-    } else {
-      video.addEventListener('canplay', attemptPlay, { once: true })
-    }
-
-    return () => video.removeEventListener('canplay', attemptPlay)
+    // Force the browser to start fetching the video, then play.
+    // Without load(), iOS Safari never downloads anything and canplay never fires.
+    video.load()
+    video.play().then(() => {
+      setBlocked(false)
+    }).catch(() => {
+      // play() failed before video loaded — wait for it to buffer then retry
+      const onCanPlay = () => {
+        video.play().then(() => setBlocked(false)).catch(() => setBlocked(true))
+      }
+      video.addEventListener('canplay', onCanPlay, { once: true })
+    })
   }, [])
 
   const handleTap = () => {
-    const video = videoRef.current
-    if (!video) return
-    video.play().then(() => setBlocked(false)).catch(() => {})
+    videoRef.current?.play().then(() => setBlocked(false)).catch(() => {})
   }
-
-  // Force H.264 via Cloudinary transform for maximum Safari compatibility
-  const optimisedSrc = src.replace(
-    '/video/upload/',
-    '/video/upload/vc_h264,q_auto,f_mp4/'
-  )
 
   return (
     <div className="fixed inset-0 z-0" onClick={blocked ? handleTap : undefined}>
@@ -55,27 +43,27 @@ export default function HeroBackground({ src, poster }: HeroBackgroundProps) {
         ref={videoRef}
         data-testid="hero-video"
         className="absolute inset-0 h-full w-full object-cover"
+        src={src}
         poster={poster}
         autoPlay
         muted
         loop
         playsInline
-      >
-        <source src={optimisedSrc} type="video/mp4" />
-      </video>
+        preload="auto"
+      />
 
       <div
         data-testid="hero-overlay"
         className="absolute inset-0 bg-black/15"
       />
 
-      {/* Tap-to-play — only shown when autoplay is blocked (e.g. Instagram browser) */}
+      {/* Tap-to-play — only shown when autoplay is blocked */}
       {blocked && (
         <div className="absolute inset-0 flex items-center justify-center">
           <button
             onClick={handleTap}
             aria-label="Play video"
-            className="flex items-center justify-center w-16 h-16 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm transition-opacity duration-300 hover:bg-white/20"
+            className="flex items-center justify-center w-16 h-16 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm hover:bg-white/20 transition-opacity duration-300"
           >
             <svg viewBox="0 0 24 24" fill="white" className="w-6 h-6 ml-1 opacity-80">
               <path d="M8 5v14l11-7z" />
