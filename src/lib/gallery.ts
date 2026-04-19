@@ -37,14 +37,13 @@ export async function getSessions(): Promise<Session[]> {
 
   try {
     const result = await cloudinary.api.resources({
-      type:        'upload',
-      prefix:      'works/',
-      max_results: 500,
+      type:          'upload',
+      max_results:   500,
       resource_type: 'image',
     })
     resources = result.resources
   } catch {
-    // Credentials not set or folder empty — return empty gallery
+    // Credentials not set or API error — return empty gallery
     return []
   }
 
@@ -52,8 +51,9 @@ export async function getSessions(): Promise<Session[]> {
   const unmatched: Photo[] = []
 
   for (const resource of resources) {
-    // public_id is like "works/filename" — extract just the filename part
-    const file = resource.public_id.replace(/^works\//, '')
+    // public_id may have a Cloudinary suffix (e.g. "_MG_1815_uf56ua") —
+    // strip the trailing underscore + random chars so rules can match
+    const file = resource.public_id.replace(/_[a-z0-9]{6}$/, '')
     const src  = resource.secure_url
     const photo: Photo = { file, src }
     const rule = RULES.find(r => r.match(file))
