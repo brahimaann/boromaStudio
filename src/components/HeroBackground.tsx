@@ -1,10 +1,10 @@
 'use client'
 
 // src/components/HeroBackground.tsx
-// NOTE: video.muted must be set via JS ref — React does not correctly reflect
-// the `muted` prop to the DOM attribute, which causes iOS Safari to block autoplay.
-
-import { useEffect, useRef } from 'react'
+// We inject the <video> as raw HTML to bypass React's known bug where the
+// `muted` prop is never written to the DOM attribute — which causes iOS Safari
+// to block autoplay. dangerouslySetInnerHTML guarantees the browser sees
+// <video autoplay muted loop playsinline> exactly as written.
 
 type HeroBackgroundProps = {
   src: string
@@ -12,33 +12,28 @@ type HeroBackgroundProps = {
 }
 
 export default function HeroBackground({ src, poster }: HeroBackgroundProps) {
-  const videoRef = useRef<HTMLVideoElement>(null)
-
-  useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
-    video.muted = true
-    video.play().catch(() => {})
-  }, [])
+  const posterAttr = poster ? `poster="${poster}"` : ''
 
   return (
     <div className="fixed inset-0 z-0">
-      <video
-        // Inline ref sets muted=true immediately on element creation,
-        // before the browser runs its autoplay eligibility check.
-        ref={(el) => {
-          (videoRef as React.MutableRefObject<HTMLVideoElement | null>).current = el
-          if (el) el.muted = true
+      <div
+        data-testid="hero-video-wrapper"
+        className="absolute inset-0"
+        dangerouslySetInnerHTML={{
+          __html: `
+            <video
+              autoplay
+              muted
+              loop
+              playsinline
+              preload="auto"
+              ${posterAttr}
+              style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"
+            >
+              <source src="${src}" type="video/mp4" />
+            </video>
+          `,
         }}
-        data-testid="hero-video"
-        className="absolute inset-0 h-full w-full object-cover"
-        src={src}
-        poster={poster}
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
       />
       <div
         data-testid="hero-overlay"
