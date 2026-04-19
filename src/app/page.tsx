@@ -6,7 +6,7 @@ import { navLinks } from '@/lib/nav'
 export default function Home() {
   return (
     <main className="h-screen w-screen">
-      <HeroBackground src="/hero.mp4" />
+      <HeroBackground src="https://res.cloudinary.com/dx3gpmtby/video/upload/v1776625608/hero_qb3zbw.mp4" />
       <NavigationOverlay links={navLinks} defaultOpen={false} />
     </main>
   )
