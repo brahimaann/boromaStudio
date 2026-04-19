@@ -177,13 +177,12 @@ export default function IntakeDrawer({ selectedService, onClose }: Props) {
                   <label className="flex flex-col gap-2">
                     <span className="font-mono text-[8px] text-black/25 tracking-widest">From</span>
                     <div className="flex items-baseline gap-1 border-b border-black/20 focus-within:border-black/60 transition-colors duration-150 pb-2">
-                      <span className="font-mono text-[10px] text-black/30">$</span>
                       <input
                         type="text"
                         inputMode="numeric"
                         value={budgetFrom}
                         onChange={e => setBudgetFrom(e.target.value)}
-                        placeholder="5,000"
+                        placeholder="$$"
                         className="font-mono text-[11px] text-black bg-transparent outline-none w-full placeholder:text-black/20"
                       />
                     </div>
@@ -191,13 +190,12 @@ export default function IntakeDrawer({ selectedService, onClose }: Props) {
                   <label className="flex flex-col gap-2">
                     <span className="font-mono text-[8px] text-black/25 tracking-widest">To <span className="text-black/15">(optional)</span></span>
                     <div className="flex items-baseline gap-1 border-b border-black/20 focus-within:border-black/60 transition-colors duration-150 pb-2">
-                      <span className="font-mono text-[10px] text-black/30">$</span>
                       <input
                         type="text"
                         inputMode="numeric"
                         value={budgetTo}
                         onChange={e => setBudgetTo(e.target.value)}
-                        placeholder="10,000"
+                        placeholder="$$$$"
                         className="font-mono text-[11px] text-black bg-transparent outline-none w-full placeholder:text-black/20"
                       />
                     </div>
