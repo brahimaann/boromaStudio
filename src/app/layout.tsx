@@ -19,6 +19,10 @@ const bebasNeue = Bebas_Neue({
 export const metadata: Metadata = {
   title: 'Boroma Studios',
   description: 'Multidisciplinary creative and engineering studio. Minneapolis / Saint Paul.',
+  icons: [
+    { rel: 'icon', url: '/favicon-dark.svg', type: 'image/svg+xml' },
+    { rel: 'icon', url: '/Dwennimmen-Adinkra-Symbol.ico', media: '(prefers-color-scheme: light)', type: 'image/x-icon' },
+  ],
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
